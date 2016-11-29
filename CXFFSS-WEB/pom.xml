@@ -1,0 +1,136 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <artifactId>CXFSS-ROOT</artifactId>
+        <groupId>COM.IT.H2.CXFSS</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>CXFSS-WEB</artifactId>
+    <packaging>war</packaging>
+    <name>CXFSS-WEB Maven Webapp</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <jetty.version>6.1.26</jetty.version>
+        <!--插件版本变量 start-->
+        <tomcat6-maven-plugin.version>2.1</tomcat6-maven-plugin.version>
+        <tomcat7-maven-plugin.version>2.2</tomcat7-maven-plugin.version>
+        <jetty-plugin.version>9.3.14.v20161028</jetty-plugin.version>
+
+        <war-name.version>ssm</war-name.version>
+        <jdk.version>1.8</jdk.version>
+
+        <tomcat-port.version>8080</tomcat-port.version>
+        <tomcat-uri-encoding.version>UTF-8</tomcat-uri-encoding.version>
+        <tomcat-path.version>/</tomcat-path.version>
+        <jetty-port.version>8080</jetty-port.version>
+        <jetty-path.version>/</jetty-path.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>COM.IT.H2.CXFSS</groupId>
+            <artifactId>CXFSS-M0-API</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>COM.IT.H2.CXFSS</groupId>
+            <artifactId>CXFF-M0-IMPL</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>CXFSS-WEB</finalName>
+        <plugins>
+            <!-- tomcat6插件 -->
+            <!--https://tomcat.apache.org/maven-plugin-2.0/tomcat6-maven-plugin/run-mojo.html-->
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat6-maven-plugin</artifactId>
+                <version>${tomcat6-maven-plugin.version}</version>
+                <configuration>
+                    <!--项目访问路径 这里直接使用根目录就可以了,访问地址http://localhost:8080/ -->
+                    <!-- 如果这里配置了,比如test，那访问地址就需要变成：http://localhost:8080/test-->
+                    <path>${tomcat-path.version}</path>
+                    <port>${tomcat-port.version}</port>
+                    <!--tomcat的url编码  达到和修改server.xml文件一样的功能-->
+                    <uriEncoding>${tomcat-uri-encoding.version}</uriEncoding>
+                    <!--配置远程tomcat管理的连接路径地址(固定的一个链接)-->
+                    <url>http://localhost:8080/manager/html</url>
+                    <server>tomcat6</server>
+                </configuration>
+            </plugin>
+
+            <!--tomcat7插件-->
+            <!--https://tomcat.apache.org/maven-plugin-2.0/tomcat7-maven-plugin/run-mojo.html-->
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <path>${tomcat-path.version}</path>
+                    <port>${tomcat-port.version}</port>
+                    <uriEncoding>${tomcat-uri-encoding.version}</uriEncoding>
+                    <url>http://localhost:8080/manager/text</url>
+                    <server>tomcat7</server>
+                    <username>admin</username>
+                    <password>admin</password>
+                </configuration>
+            </plugin>
+
+            <!--jetty插件-->
+            <!--http://www.eclipse.org/jetty/documentation/9.0.0.M3/jetty-maven-plugin.html-->
+            <plugin>
+                <!-- https://mvnrepository.com/artifact/org.mortbay.jetty/jetty-plus -->
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.3.14.v20161028</version>
+                <configuration>
+                    <!--scanIntervalSeconds 可选[秒]。在很短的时间间隔内在扫描web应用检查是否有改变，如果发觉有任何改变则自动热部署。默认为0，表示禁用热部署检查。任何一个大于0的数字都将表示启用。-->
+                    <!-- 使用JRebel插件则不用jetty的热部署 -->
+                    <!--<scanIntervalSeconds>100</scanIntervalSeconds>-->
+                    <stopKey>foo</stopKey>
+                    <stopPort>9999</stopPort>
+                    <webAppSourceDirectory>${project.basedir}/src/mian/resource</webAppSourceDirectory>
+                    <webApp>
+                        <descriptor>${project.basedir}/src/main/webapp/WEB-INF/web.xml</descriptor>
+                        <!--访问地址：http://localhost:8080/index.jsp-->
+                        <!--如果不带index.jsp会直接报404，这个一直没找到原因-->
+                        <contextPath>${jetty-path.version}</contextPath>
+                    </webApp>
+                </configuration>
+            </plugin>
+
+
+        </plugins>
+
+        <!-- 用于解决 资源文件加载问题
+         由于要加载mybatis的mapping.xml文件，同时要加载resource中的全局配置文件
+         -->
+        <resources>
+            <!-- 加载source目录下的资源文件 -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.jsp</include>
+                    <include>**/*.xml</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+
+            <!-- 加载java目录下的资源文件 -->
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+
+    </build>
+</project>
